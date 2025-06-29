@@ -1,12 +1,16 @@
 #include <iostream>
 #include <vector>
 
+#define ERROR "-";
+
 using namespace std;
 
-typedef struct pair {
+typedef struct pair
+{
 	vector<string> placeholder;
 	vector<string> word;
-	pair(string placeholder, string word) {
+	pair(string placeholder, string word)
+	{
 		this->placeholder.push_back(placeholder);
 		this->word.push_back(word);
 	}
@@ -54,14 +58,34 @@ bool is_placeholder(std::string word)
 	return false;
 }
 
+bool add_pair(std::vector<pair_t> pairs, pair_t pair)
+{
+
+	for (int i = 0; i < pairs.size(); i++)
+	{
+		if (pairs.at(i).placeholder == pair.placeholder)
+		{
+			if (pairs.at(i).word != pair.word)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 std::string compare_line(std::vector<string> line1, std::vector<string> line2)
 {
 	if (line1.size() != line2.size())
 	{
-		return "-";
+		return ERROR;
 	}
 
 	string output;
+
+	std::vector<pair_t> placeholders1;
+	std::vector<pair_t> placeholders2;
 
 	for (int word = 0; word < line1.size(); word++)
 	{
@@ -71,12 +95,9 @@ std::string compare_line(std::vector<string> line1, std::vector<string> line2)
 		bool is_placeholder1 = is_placeholder(word1);
 		bool is_placeholder2 = is_placeholder(word2);
 
-		std::vector<string> placeholders1;
-		std::vector<string> placeholders2;
-
 		if (word1 != word2 && !is_placeholder1 && !is_placeholder2)
 		{
-			return "-";
+			return ERROR;
 		}
 		else
 		{
@@ -84,13 +105,31 @@ std::string compare_line(std::vector<string> line1, std::vector<string> line2)
 			{
 				output += word2;
 				output += " "; // add blankspace
-				pair_t* pair = new pair_t(word1, word2);
-
+				pair_t *pair = new pair_t(word1, word2);
+				// placeholders1.push_back(*pair);
+				if (add_pair(placeholders1, *pair))
+				{
+					placeholders1.push_back(*pair);
+				}
+				else
+				{
+					return ERROR;
+				}
 			}
 			else if (is_placeholder2 && !is_placeholder1)
 			{
 				output += word1;
 				output += " ";
+
+				pair_t *pair = new pair_t(word2, word1);
+				if (add_pair(placeholders2, *pair))
+				{
+					placeholders2.push_back(*pair);
+				}
+				else
+				{
+					return ERROR;
+				}
 			}
 			else if (!is_placeholder1 && !is_placeholder2)
 			{
@@ -125,13 +164,17 @@ void help(string lines[])
 int main()
 {
 
-	string input[100] = {"3",
+	string input[100] = {"5",
 						 "how now brown <animal>",
 						 "<foo> now <color> cow",
 						 "who are you",
 						 "<a> <b> <a>",
 						 "<a> b",
-						 "c <a>"};
+						 "c <a>",
+						 "how how cow how",
+						 "<a> <a> <a> <b>",
+						 "to be or not to be",
+						 "<foo> be <bar> not <foo> <baf>"};
 
 	help(input);
 
