@@ -22,11 +22,13 @@ typedef struct sack
 	int current_weight;
 	vector<item_t> items;
 	vector<item_t> all_items;
+	sack() {
+		this->value = 0;
+		this->current_weight = 0;
+		
+	}
 } sack_t;
 
-void knapsack()
-{
-}
 
 vector<string> split_line(string line)
 {
@@ -103,19 +105,39 @@ vector<sack_t> parse_input(vector<string> lines)
 	return sacks;
 }
 
-void pack_sack(sack_t sack)
-{
-	
+sack_t pack_sack(sack_t sack)
+{																								
+	for (item_t item : sack.all_items) {
+		if  (sack.current_weight + item.weight <= sack.max_weight) {
+			sack.items.push_back(item);
+			sack.current_weight+=item.weight;																																																												
+			sack.value+=item.value;
+		}
+	}
+
+	return sack;
 
 }
 
-void pack_all_sacks(vector<sack_t> sacks)
+void print_sack(sack_t sack) {
+	cout << "weight: " << " value: "<< sack.value << "\n";
+	for (item_t item : sack.items) {
+		cout << item.weight << " : " << item.value<< "\n";
+	}
+}
+
+vector<sack_t> pack_all_sacks(vector<sack_t> sacks)
 {
+	vector<sack_t> packed;
 
 	for (sack_t sack : sacks)
 	{
-		pack_sack(sack);
+		sack = pack_sack(sack);
+		packed.push_back(sack);
+		print_sack(sack);
 	}
+
+	return packed;
 }
 
 int main()
@@ -132,6 +154,6 @@ int main()
 		"2 1"};
 
 	vector<sack_t> sacks = parse_input(input);
-	cout << sacks.at(1).all_items.size();
+	sacks = pack_all_sacks(sacks);
 	return 0;
 }
