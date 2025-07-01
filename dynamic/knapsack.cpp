@@ -8,10 +8,12 @@ typedef struct item
 {
 	int value;
 	int weight;
-	item(int value, int weight)
+	int index;
+	item(int value, int weight, int index)
 	{
 		this->value = value;
 		this->weight = weight;
+		this->index = index;
 	}
 } item_t;
 
@@ -22,13 +24,12 @@ typedef struct sack
 	int current_weight;
 	vector<item_t> items;
 	vector<item_t> all_items;
-	sack() {
+	sack()
+	{
 		this->value = 0;
 		this->current_weight = 0;
-		
 	}
 } sack_t;
-
 
 vector<string> split_line(string line)
 {
@@ -85,7 +86,7 @@ vector<sack_t> parse_input(vector<string> lines)
 		for (int i = 0; i < nr_of_items; i++)
 		{
 			vector<string> values = split_line(lines[lines_parsed]);
-			item_t *item = new item_t(stoi(values[0]), stoi(values[1]));
+			item_t *item = new item_t(stoi(values[0]), stoi(values[1]), i);
 			sack.all_items.push_back(*item);
 			lines_parsed++;
 		}
@@ -94,36 +95,79 @@ vector<sack_t> parse_input(vector<string> lines)
 		if (lines_parsed == total_lines)
 			break;
 
-		lines_parsed++;
 		vector<string> next_sack_metdata = split_line(lines[lines_parsed]);
 		capacity = stoi(next_sack_metdata.at(0));
 		nr_of_items = stoi(next_sack_metdata.at(1));
+		lines_parsed++;
 	}
-
-	// cout << sacks.size();
 
 	return sacks;
 }
 
+vector<item_t> sort_items_by_ration(vector<item_t> items)
+{
+	vector<item_t> sorted;
+
+	int index = 1;
+	sorted.push_back(items.at(0)); // add first item
+	while (sorted.size() < items.size())
+	{
+		item_t current_item = items.at(index);
+		double ratio = current_item.value / current_item.weight;
+
+		for (int j = 0; j < sorted.size(); j++)
+		{
+			item_t compare = sorted.at(j);
+			double compare_ratio = compare.value / compare.weight;
+
+			if (ratio >= compare_ratio)
+			{ // this item is better, add in front
+				sorted.insert(sorted.begin(), current_item);
+				break;
+			}
+
+			if (j == sorted.size() - 1)
+			{ // we reached the end of the vector
+				sorted.push_back(current_item);
+			}
+		}
+
+		index++;
+	}
+
+	return sorted;
+}
+
 sack_t pack_sack(sack_t sack)
-{																								
-	for (item_t item : sack.all_items) {
-		if  (sack.current_weight + item.weight <= sack.max_weight) {
+{
+	// sortera alla items efter högst value to weight ratio, och lägg sedan in så många som möjligt?
+	sack.all_items = sort_items_by_ration(sack.all_items);
+	for (item_t item : sack.all_items)
+	{
+		if (sack.current_weight + item.weight <= sack.max_weight)
+		{
 			sack.items.push_back(item);
-			sack.current_weight+=item.weight;																																																												
-			sack.value+=item.value;
+			sack.current_weight += item.weight;
+			sack.value += item.value;
 		}
 	}
 
 	return sack;
-
 }
 
-void print_sack(sack_t sack) {
-	cout << "weight: " << " value: "<< sack.value << "\n";
-	for (item_t item : sack.items) {
-		cout << item.weight << " : " << item.value<< "\n";
+void print_result(vector<sack_t> sacks)
+{
+	for (sack_t sack : sacks)
+	{
+		cout << "\n";
+		cout << sack.items.size() << "\n";
+		for (item_t item : sack.items)
+		{
+			cout << item.index << " ";
+		}
 	}
+
+	cout << "\n";
 }
 
 vector<sack_t> pack_all_sacks(vector<sack_t> sacks)
@@ -134,7 +178,6 @@ vector<sack_t> pack_all_sacks(vector<sack_t> sacks)
 	{
 		sack = pack_sack(sack);
 		packed.push_back(sack);
-		print_sack(sack);
 	}
 
 	return packed;
@@ -142,18 +185,17 @@ vector<sack_t> pack_all_sacks(vector<sack_t> sacks)
 
 int main()
 {
-	vector<string> input = {
-		"5 3",
-		"1 5",
-		"10 5",
-		"100 5",
-		"6 4",
-		"5 4",
-		"4 3",
-		"3 2",
-		"2 1"};
-
-	vector<sack_t> sacks = parse_input(input);
+	vector<string> data;
+	string line;
+	while (std::getline(std::cin, line))
+	{
+		// std::cout << line << std::endl;
+		data.push_back(line);
+	}
+	if (data.size() == 0)
+		return 0;
+	vector<sack_t> sacks = parse_input(data);
 	sacks = pack_all_sacks(sacks);
+	print_result(sacks);
 	return 0;
 }
