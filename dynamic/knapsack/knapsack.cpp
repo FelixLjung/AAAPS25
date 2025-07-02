@@ -129,6 +129,7 @@ vector<item_t> sort_items_by_ration(vector<item_t> items)
 			if (j == sorted.size() - 1)
 			{ // we reached the end of the vector
 				sorted.push_back(current_item);
+				break;
 			}
 		}
 
